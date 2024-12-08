@@ -22,6 +22,10 @@ class Document:
 
     text: str
     id: str
+    time: str
+    district: str
+    title: str
+    outline: str
 
 
 @dataclass

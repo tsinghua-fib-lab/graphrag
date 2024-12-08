@@ -130,6 +130,10 @@ def run_strategy(
     results = []
     for strategy_result in strategy_results:
         doc_indices = strategy_result.source_doc_indices
+        time = [input[doc_idx][2] for doc_idx in doc_indices]
+        district = [input[doc_idx][3] for doc_idx in doc_indices]
+        title = [input[doc_idx][4] for doc_idx in doc_indices]
+        outline = [input[doc_idx][5] for doc_idx in doc_indices]
         if isinstance(input[doc_indices[0]], str):
             results.append(strategy_result.text_chunk)
         else:
@@ -138,6 +142,10 @@ def run_strategy(
                 doc_ids,
                 strategy_result.text_chunk,
                 strategy_result.n_tokens,
+                time,
+                district,
+                title,
+                outline,
             ))
     return results
 

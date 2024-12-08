@@ -148,8 +148,12 @@ async def entity_extract(
         nonlocal num_started
         text = row[column]
         id = row[id_column]
+        time = row["time"]
+        district = row["district"]
+        title = row["title"]
+        outline = row["outline"]
         result = await strategy_exec(
-            [Document(text=text, id=id)],
+            [Document(text=text, id=id, time=time, district=district, title=title, outline=outline)],
             entity_types,
             callbacks,
             cache,

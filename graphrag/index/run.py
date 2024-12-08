@@ -2,6 +2,7 @@
 # Licensed under the MIT License
 
 """Different methods to run the pipeline."""
+import re
 
 import gc
 import json
@@ -150,7 +151,38 @@ async def run_pipeline_with_config(
     if dataset is None:
         msg = "No dataset provided!"
         raise ValueError(msg)
+    
+    def extract_meta_data(input_str):
+        pattern = re.compile(r'\|(\w+)\|\n(.*?)(?=\n\|\w+\||$)', re.DOTALL)
+        matches = pattern.findall(input_str)
+        data = {key: value.strip() for key, value in matches}
+        return data
+    
+    columns = ['title', 'district', 'time', 'outline']
+    new_column_dict = {
+        "title": [],
+        "district": [],
+        "time": [],
+        "outline": []
+    }
 
+    for index, row in dataset.iterrows():
+        parts = row['text'].split('---------------------------------------------')
+        original_text = parts[0]
+        meta_data_text = parts[1]
+
+        meta_data = extract_meta_data(meta_data_text)
+        for key in columns:
+            try:
+                new_column_dict[key].append(meta_data[key])
+            except KeyError:
+                new_column_dict[key].append('无')   
+
+        dataset.at[index, 'text'] = original_text
+        
+    for key in columns:
+        dataset[key] = new_column_dict[key]
+    
     async for table in run_pipeline(
         workflows=workflows,
         dataset=dataset,

@@ -38,7 +38,7 @@ def build_steps(
             "args": {
                 # Pack the document ids with the text
                 # So when we unpack the chunks, we can restore the document id
-                "columns": ["id", "text"],
+                "columns": ["id", "text", "time", "district", "title", "outline"],
                 "to": "text_with_ids",
             },
         },
@@ -92,7 +92,7 @@ def build_steps(
             "verb": "unzip",
             "args": {
                 "column": chunk_column_name,
-                "to": ["document_ids", chunk_column_name, n_tokens_column_name],
+                "to": ["document_ids", chunk_column_name, n_tokens_column_name, "time", "district", "title", "outline"],
             },
         },
         {"verb": "copy", "args": {"column": "chunk_id", "to": "id"}},
