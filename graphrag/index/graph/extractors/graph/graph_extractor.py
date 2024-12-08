@@ -51,6 +51,10 @@ class GraphExtractor:
     _loop_args: dict[str, Any]
     _max_gleanings: int
     _on_error: ErrorHandlerFn
+    _time_key: str
+    _district_key: str
+    _title_key: str
+    _outline_key: str
 
     def __init__(
         self,
@@ -60,6 +64,10 @@ class GraphExtractor:
         input_text_key: str | None = None,
         entity_types_key: str | None = None,
         completion_delimiter_key: str | None = None,
+        time_key: str | None = None,
+        district_key: str | None = None,
+        title_key: str | None = None,
+        outline_key: str | None = None,
         prompt: str | None = None,
         join_descriptions=True,
         encoding_model: str | None = None,
@@ -76,6 +84,11 @@ class GraphExtractor:
         self._completion_delimiter_key = (
             completion_delimiter_key or "completion_delimiter"
         )
+        self._time_key = time_key or "time"
+        self._district_key = district_key or "district"
+        self._title_key = title_key or "title"
+        self._outline_key = outline_key or "outline"
+        
         self._entity_types_key = entity_types_key or "entity_types"
         self._extraction_prompt = prompt or GRAPH_EXTRACTION_PROMPT
         self._max_gleanings = (
@@ -92,7 +105,7 @@ class GraphExtractor:
         self._loop_args = {"logit_bias": {yes[0]: 100, no[0]: 100}, "max_tokens": 1}
 
     async def __call__(
-        self, texts: list[str], prompt_variables: dict[str, Any] | None = None
+        self, texts: list[str], times: list[str], districts: list[str], titles: list[str], outlines: list[str], prompt_variables: dict[str, Any] | None = None
     ) -> GraphExtractionResult:
         """Call method definition."""
         if prompt_variables is None:
@@ -119,7 +132,11 @@ class GraphExtractor:
         for doc_index, text in enumerate(texts):
             try:
                 # Invoke the entity extraction
-                result = await self._process_document(text, prompt_variables)
+                time = times[doc_index]
+                district = districts[doc_index]
+                title = titles[doc_index]
+                outline = outlines[doc_index]
+                result = await self._process_document(text, time, district, title, outline, prompt_variables)
                 source_doc_map[doc_index] = text
                 all_records[doc_index] = result
             except Exception as e:
@@ -145,13 +162,17 @@ class GraphExtractor:
         )
 
     async def _process_document(
-        self, text: str, prompt_variables: dict[str, str]
+        self, text: str, time: str, district: str, title: str, outline: str, prompt_variables: dict[str, str]
     ) -> str:
         response = await self._llm(
             self._extraction_prompt,
             variables={
                 **prompt_variables,
                 self._input_text_key: text,
+                self._time_key: time,
+                self._district_key: district,
+                self._title_key: title,
+                self._outline_key: outline
             },
         )
         results = response.output or ""
