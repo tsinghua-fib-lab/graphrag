@@ -80,6 +80,10 @@ async def run_extract_entities(
         ),
     )
     text_list = [doc.text.strip() for doc in docs]
+    time_list = [doc.time[0].strip() for doc in docs]
+    district_list = [doc.district[0].strip() for doc in docs]
+    title_list = [doc.title[0].strip() for doc in docs]
+    outline_list = [doc.outline[0].strip() for doc in docs]
 
     # If it's not pre-chunked, then re-chunk the input
     if not prechunked:
@@ -87,6 +91,10 @@ async def run_extract_entities(
 
     results = await extractor(
         list(text_list),
+        list(time_list),
+        list(district_list),
+        list(title_list),
+        list(outline_list),
         {
             "entity_types": entity_types,
             "tuple_delimiter": tuple_delimiter,

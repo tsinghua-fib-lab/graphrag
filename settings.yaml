@@ -1,0 +1,88 @@
+
+encoding_model: cl100k_base
+skip_workflows: []
+llm:
+  api_key: ${GRAPHRAG_API_KEY}
+  type: openai_chat # or azure_openai_chat
+  model: Qwen/Qwen2-7B-Instruct
+  model_supports_json: false # recommended if this is available for your model.
+  api_base: 
+  tokens_per_minute: 50_000 # set a leaky bucket throttle
+  requests_per_minute: 1_000 # set a leaky bucket throttle
+
+parallelization:
+  stagger: 0.3
+  num_threads: 10 # the number of threads to use for parallel processing
+
+async_mode: threaded # or asyncio
+
+embeddings:
+  async_mode: threaded # or asyncio
+  llm:
+    api_key: ${GRAPHRAG_API_KEY}
+    type: openai_embedding # or azure_openai_embedding
+    model: m3e
+    api_base: 
+    tokens_per_minute: 500_000 # set a leaky bucket throttle
+    requests_per_minute: 2000 # set a leaky bucket throttle
+    
+chunks:
+  size: 2048
+  overlap: 200
+  group_by_columns: [id] # by default, we don't allow chunks to cross documents
+    
+input:
+  type: file # or blob
+  file_type: text # or csv
+  base_dir: "input"
+  file_encoding: utf-8
+  file_pattern: ".*\\.txt$"
+
+cache:
+  type: file # or blob
+  base_dir: "cache"
+
+storage:
+  type: file # or blob
+  base_dir: "output/${timestamp}/artifacts"
+
+reporting:
+  type: file # or console, blob
+  base_dir: "output/${timestamp}/reports"
+
+entity_extraction:
+  prompt: "prompts/entity_extraction.txt"
+  entity_types: ["文件", "地区", "机构", "事件", "价格", "计算公式"] # modified to adapt to meta-data
+  max_gleanings: 1
+
+summarize_descriptions:
+  prompt: "prompts/summarize_descriptions.txt"
+  max_length: 500
+
+claim_extraction:
+  prompt: "prompts/claim_extraction.txt"
+  description: "Any claims or facts that could be relevant to information discovery."
+  max_gleanings: 1
+
+community_reports:
+  prompt: "prompts/community_report.txt"
+  max_length: 2000
+  max_input_length: 8000
+
+cluster_graph:
+  max_cluster_size: 10
+
+embed_graph:
+  enabled: false # if true, will generate node2vec embeddings for nodes
+
+umap:
+  enabled: false # if true, will generate UMAP embeddings for nodes
+
+snapshots:
+  graphml: false
+  raw_entities: false
+  top_level_nodes: false
+
+local_search:
+
+global_search:
